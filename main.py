@@ -1,4 +1,3 @@
-from typing import final
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -54,18 +53,27 @@ print(cleared_data.isnull().sum())
 
 
 
-# Example Analysis Code
-
+# -------------------------------------------------Example Analysis Code----------------------------------------------------------
 final_data = cleared_data
 
 
-# Sales over time
-sales_over_time = final_data.groupby('Date')['Amount'].sum().reset_index()
+# Define the specific statuses to exclude from sales calculations
+specific_statuses = [
+    'Cancelled', 'Shipped - Returned to Seller', 'Shipped - Rejected by Buyer',
+    'Shipped - Lost in Transit', 'Shipped - Damaged'
+]
 
-# Plotting sales trends
-plt.figure(figsize=(10,6))
+# Filter out rows with these specific statuses
+valid_sales_data = final_data[~final_data['Status'].isin(specific_statuses)]
+
+
+# Sales over time (excluding invalid statuses)
+sales_over_time = valid_sales_data.groupby('Date')['Amount'].sum().reset_index()
+
+# Plotting sales trends (with valid data only)
+plt.figure(figsize=(10, 6))
 sns.lineplot(x='Date', y='Amount', data=sales_over_time)
-plt.title('Sales Performance Over Time')
+plt.title('Sales Performance Over Time (Excluding Cancelled/Returned Orders)')
 plt.xlabel('Date')
 plt.ylabel('Total Sales Amount')
 plt.xticks(rotation=45)
@@ -73,14 +81,13 @@ plt.tight_layout()
 plt.show()
 
 
-
 # Product category distribution
-category_distribution = final_data.groupby('Category')['Qty'].sum().reset_index()
+category_distribution = valid_sales_data.groupby('Category')['Qty'].sum().reset_index()
 
 # Plotting product distribution
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(8, 5))
 sns.barplot(x='Qty', y='Category', data=category_distribution)
-plt.title('Product Category Distribution')
+plt.title('Product Category Distribution (Excluding Invalid Orders)')
 plt.xlabel('Quantity Sold')
 plt.ylabel('Category')
 plt.tight_layout()
@@ -88,7 +95,7 @@ plt.show()
 
 
 # Size analysis
-size_distribution = final_data.groupby('Size')['Qty'].sum().reset_index()
+size_distribution = valid_sales_data.groupby('Size')['Qty'].sum().reset_index()
 
 # Plotting size distribution
 plt.figure(figsize=(8,5))
@@ -101,7 +108,7 @@ plt.show()
 
 
 # Fulfillment method analysis
-fulfillment_distribution = final_data['fulfilled-by'].value_counts().reset_index()
+fulfillment_distribution = valid_sales_data['fulfilled-by'].value_counts().reset_index()
 fulfillment_distribution.columns = ['Fulfilled By', 'Count']
 
 # Plotting fulfillment methods
@@ -115,7 +122,7 @@ plt.show()
 
 
 # Fulfilled vs. unfulfilled orders
-status_distribution = final_data['Status'].value_counts().reset_index()
+status_distribution = valid_sales_data['Status'].value_counts().reset_index()
 status_distribution.columns = ['Status', 'Count']
 
 # Plotting order statuses
@@ -129,7 +136,7 @@ plt.show()
 
 
 # Customer segmentation based on quantity purchased
-customer_segmentation = final_data.groupby('ship-city')['Qty'].sum().reset_index()
+customer_segmentation = valid_sales_data.groupby('ship-city')['Qty'].sum().reset_index()
 
 # Plotting customer segmentation by city
 plt.figure(figsize=(10,6))
@@ -142,7 +149,7 @@ plt.show()
 
 
 # Customer segmentation by state
-state_segmentation = final_data.groupby('ship-state')['Qty'].sum().reset_index()
+state_segmentation = valid_sales_data.groupby('ship-state')['Qty'].sum().reset_index()
 
 # Plotting customer segmentation by state
 plt.figure(figsize=(10,6))
@@ -155,7 +162,7 @@ plt.show()
 
 
 # Sales by city
-city_sales = final_data.groupby('ship-city')['Amount'].sum().reset_index()
+city_sales = valid_sales_data.groupby('ship-city')['Amount'].sum().reset_index()
 
 # Plotting top cities by sales
 plt.figure(figsize=(10,6))
@@ -168,7 +175,7 @@ plt.show()
 
 
 # Sales by state
-state_sales = final_data.groupby('ship-state')['Amount'].sum().reset_index()
+state_sales = valid_sales_data.groupby('ship-state')['Amount'].sum().reset_index()
 
 # Plotting top states by sales
 plt.figure(figsize=(10,6))
@@ -178,4 +185,28 @@ plt.xlabel('Total Sales')
 plt.ylabel('State')
 plt.tight_layout()
 plt.show()
+
+
+# Filter data based on specific statuses
+status_filtered_data = final_data[final_data['Status'].isin(specific_statuses)]
+
+# Group the filtered data by Category and Status
+category_status_distribution = status_filtered_data.groupby(['Category', 'Status'])['Qty'].sum().reset_index()
+
+# Create a separate plot for each status
+for status in specific_statuses:
+    # Filter data for each status
+    status_data = category_status_distribution[category_status_distribution['Status'] == status]
+
+    # Plotting the product distribution for each status
+    plt.figure(figsize=(8, 5))
+    sns.barplot(x='Qty', y='Category', data=status_data)
+    plt.title(f'Product Distribution for Status: {status}')
+    plt.xlabel('Quantity')
+    plt.ylabel('Product Category')
+    plt.tight_layout()
+    plt.show()
+
+
+
 
