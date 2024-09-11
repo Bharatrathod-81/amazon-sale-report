@@ -53,7 +53,7 @@ print(cleared_data.isnull().sum())
 
 
 
-# -------------------------------------------------Example Analysis Code----------------------------------------------------------
+# -------------------------------------------------Analysis Code----------------------------------------------------------
 final_data = cleared_data
 
 
@@ -190,10 +190,10 @@ plt.show()
 # Filter data based on specific statuses
 status_filtered_data = final_data[final_data['Status'].isin(specific_statuses)]
 
-# Group the filtered data by Category and Status
+# filtered data by Category and Status
 category_status_distribution = status_filtered_data.groupby(['Category', 'Status'])['Qty'].sum().reset_index()
 
-# Create a separate plot for each status
+# separate plot for each status
 for status in specific_statuses:
     # Filter data for each status
     status_data = category_status_distribution[category_status_distribution['Status'] == status]
